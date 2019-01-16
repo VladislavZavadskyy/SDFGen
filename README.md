@@ -1,86 +1,15 @@
 # sdfgen
 
-![](viewer/sdf.jpg)
+```bash
+curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+sudo apt-get install -y nodejs
 
-Stand-alone GPU-based signed distance field generator from 3D triangle meshes. Used in Armory, written in Haxe and Kha.
+sudo apt-get install libx11-dev libxinerama-dev libasound2-dev
 
-## Run
-
-Takes `mesh.obj` file and outputs raw 50x50x50 (50x2500) volume of floats into `out.bin`. This volume can be loaded into a 3D texture using R32/R16 format.
-
-```
-git clone https://github.com/armory3d/sdfgen
-cd sdfgen/build/krom
-```
-
-Windows
-```
-./run_windows.bat
-```
-
-Linux
-```
-./run_linux.sh
-```
-
-MacOS
-```
-./run_macos.sh
-```
-
-## Viewer
-
-A simple viewer is included. Copy resulting `out.bin` file into `sdfgen/viewer/build/krom`.
-
-```
-cd sdfgen/viewer/build/krom
-./run_windows.bat
-./run_macos.sh
-./run_linux.sh
-```
-
-An included `mesh.obj` file:
-
-![](viewer/a.png)
-
-Currently results into this:
-
-![](viewer/b.png)
-
-## Build
-
-[Node](https://nodejs.org) and [Git](https://git-scm.com) required.
-
-1. Recursive clone
-
-```
-git clone --recursive https://github.com/armory3d/sdfgen
+git clone --recursive https://github.com/VladislavZavadskyy/sdfgen
 cd sdfgen
-git submodule foreach --recursive git pull origin master
-git pull origin master
+
+node Kha/make krom --shaderversion 450
+node Kha/make --compile --shaderversion 450
+
 ```
-
-2. a) Compile Krom
-```
-node Kha/make krom
-```
-
-2. b) Compile C++
-```
-node Kha/make --compile
-```
-
-## References
-
-This tool builds upon the works kindly shared in:
-- (!) https://kosmonautblog.wordpress.com/2017/05/01/signed-distance-field-rendering-journey-pt-1/
-- http://advances.realtimerendering.com/s2015/DynamicOcclusionWithSignedDistanceFields.pdf
-- http://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
-- https://en.wikipedia.org/wiki/Möller–Trumbore_intersection_algorithm
-
-## Tech
-
-- [Iron](https://github.com/armory3d/iron)
-- [Kha](https://github.com/Kode/Kha)
-- [Krom](https://github.com/Kode/Krom)
-- [Haxe](https://github.com/HaxeFoundation/haxe)

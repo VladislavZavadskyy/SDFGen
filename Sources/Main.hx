@@ -23,7 +23,9 @@ class Main {
 		#end
 
 		iron.data.Data.getBlob(path, function(md:kha.Blob) {
+			trace("SDF: Loading obj");
 			var obj = new ObjLoader(md.toString());
+			trace("SDF: Obj loaded");
 			var pa = obj.indexedVertices;
 			// var uva = obj.indexedUVs;
 			var ia = obj.indices;
@@ -67,6 +69,7 @@ class Main {
 			iron.object.Uniforms.externalIntLinks = [externalIntLink];
 		});
 		// });
+		trace("SDF: Make tex finished");
 	}
 
 	static function externalTextureLink(tulink:String):kha.Image {
@@ -100,6 +103,7 @@ class Main {
 		trace("SDF: Write");
 		var image = iron.Scene.active.camera.data.pathdata.renderTargets.get("sdf").image;
 		var b = image.getPixels();
+		// trace(b.getData());
 
 		#if kha_krom
 		Krom.fileSaveBytes("out.bin", b.getData());
