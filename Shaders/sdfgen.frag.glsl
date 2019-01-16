@@ -9,7 +9,7 @@ in vec2 texCoord;
 
 out vec4 fragColor;
 
-const float res = 50.0; // sdftex res
+const float res = 150.0; // sdftex res
 const float res2 = res * res;
 
 float dot2(const vec3 v) {
@@ -35,31 +35,39 @@ float udTriangle(const vec3 p, const vec3 a, const vec3 b, const vec3 c) {
      dot(nor, pa) * dot(nor, pa) / dot2(nor));
 }
 
-int hitTriangle(const vec3 orig, const vec3 dir, const vec3 v0, const vec3 v1, const vec3 v2) {
-    vec3 e1 = v1 - v0;
-    vec3 e2 = v2 - v0;
-    // Calculate planes normal vector
-    vec3 pvec = cross(dir, e2);
-    float det = dot(e1, pvec);
+// from wiki
+int mollerTrumbore(vec3 rayOrigin, vec3 rayVector,
+                    const vec3 vertex0, const vec3 vertex1, const vec3 vertex2)
+{
+    const float EPSILON = 1e-7;// 0.0000001;
+    vec3 edge1, edge2, h, s, q;
+    float a, f, u, v;
+    edge1 = vertex1 - vertex0;
+    edge2 = vertex2 - vertex0;
 
-    // Ray is parallel to plane
-    if (det < 1e-8 && det > -1e-8) {
+    h = cross(rayVector, edge2);
+    a = dot(edge1, h);
+    if (a > -EPSILON && a < EPSILON){
+        return 0;    // This ray is parallel to this triangle.
+		}
+    f = 1.0 / a;
+    s = rayOrigin - vertex0;
+    u = f * dot(s,h);
+    if (u < 0.0 || u > 1.0 || u == 0.0 || u == 1.0) {
         return 0;
-    }
-
-    float inv_det = 1 / det;
-    vec3 tvec = orig - v0;
-    float u = dot(tvec, pvec) * inv_det;
-    if (u < 0 || u > 1) {
+	}
+    q = cross(s,edge1);
+    v = f * dot(rayVector,q);
+    if (v < 0.0 || u + v > 1.0 || v == 0.0 || (u+v) == 1.0) {
         return 0;
+		}
+    // At this stage we can compute t to find out where the intersection point is on the line.
+    float t = f * dot(edge2,q);
+    if (t > EPSILON) {
+        return 1; // ray intersection
     }
-
-    vec3 qvec = cross(tvec, e1);
-    float v = dot(dir, qvec) * inv_det;
-    if (v < 0 || u + v > 1) {
-        return 0;
-    }
-    return 1;//dot(e2, qvec) * inv_det;
+		// This means that there is a line intersection but not a ray intersection.
+    return 0;
 }
 
 ivec2 getco(const int i) {
@@ -77,7 +85,7 @@ void main() {
 	pos = (pos / res) * 2.0 - 1.0;
 
 	float dist = 10000.0;
-    vec3 col = vec3(0.0);
+    	vec3 col = vec3(0.0);
 	int hits = 0;
 	const vec3 ray = vec3(1.0, 0.0, 0.0);
 	for (int i = 0; i < meshverts; i += 3) {
@@ -86,7 +94,7 @@ void main() {
 		vec3 c = texelFetch(meshtex, getco(i + 2), 0).rgb;
 		float d = udTriangle(pos, a, b, c);
 		dist = min(dist, d);
-		hits += hitTriangle(pos, ray, a, b, c);
+		hits += mollerTrumbore(pos, ray, a, b, c);
 
         // Found closer surface
         // if (d == dist) {
@@ -106,9 +114,9 @@ void main() {
         // }
 	}
 
-	// int inside = hits % 2 == 0 ? 1 : -1;
-    // float distout = abs(dist) * inside;
-    float distout = abs(dist);
+	  int inside = hits % 2 == 0 ? 1 : -1;
+    float distout = abs(dist) * inside;
+    // float distout = abs(dist);
 
     // fragColor.rgb = col;
     // fragColor.a = distout;
